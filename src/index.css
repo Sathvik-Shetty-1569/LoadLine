@@ -1,0 +1,478 @@
+/* ============================================================
+   Gym Instructor - "Pace Clock" theme
+   Vernacular: the pace clock on a gym wall. An instrument, not a
+   dashboard. Two functional colours only - orange = working,
+   cyan = resting - so state reads across a room. Everything else
+   stays quiet: iron ground, chalk type, one bold element (the
+   session track).
+   ============================================================ */
+
+:root {
+  --iron: #16181b;      /* ground */
+  --iron-2: #1c1f23;    /* slightly raised ground (cards on the ground) */
+  --steel: #22262b;     /* raised surfaces, unfilled track segments */
+  --steel-2: #2b3037;   /* borders, dividers, hover states */
+  --chalk: #f2f0eb;     /* primary text - warm off-white */
+  --chalk-dim: #c7c4bc; /* secondary chalk, still on dark surfaces */
+  --dim: #8b9098;       /* secondary text */
+  --effort: #ff5a1f;    /* working - safety orange */
+  --effort-ink: #2b1206; /* text on an effort-filled surface */
+  --recover: #54c7e8;   /* resting - cold steel-cyan */
+  --recover-ink: #072430; /* text on a recover-filled surface */
+  --slip: #f2b23e;      /* behind schedule */
+  --danger: #ff4d4d;
+
+  color-scheme: dark;
+  --font-ui: 'Archivo Variable', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --wght-normal: 'wght' 500;
+  --wght-medium: 'wght' 600;
+  --wght-bold: 'wght' 800;
+  --width-expanded: 'wdth' 125;
+  --width-normal: 'wdth' 100;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--iron);
+  color: var(--chalk);
+  font-family: var(--font-ui);
+  font-variation-settings: var(--wght-normal), var(--width-normal);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  margin: 0;
+  font-variation-settings: var(--wght-bold), var(--width-expanded);
+  letter-spacing: -0.01em;
+}
+
+p { margin: 0; }
+
+button {
+  font-family: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--recover);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ---- Buttons ---- */
+.btn {
+  border: 1px solid var(--steel-2);
+  background: var(--steel);
+  color: var(--chalk);
+  border-radius: 4px;
+  padding: 0.8rem 1.25rem;
+  font-size: 1rem;
+  font-variation-settings: var(--wght-medium), var(--width-normal);
+  cursor: pointer;
+  min-height: 44px;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+.btn:hover { border-color: var(--dim); }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn--primary {
+  background: var(--effort);
+  color: var(--effort-ink);
+  border-color: var(--effort);
+  font-variation-settings: var(--wght-bold), var(--width-normal);
+}
+.btn--primary:hover { background: #ff6b36; border-color: #ff6b36; }
+.btn--ghost { background: transparent; }
+.btn--large { width: 100%; padding: 1.1rem; font-size: 1.15rem; margin-top: 1.5rem; }
+.btn--small { padding: 0.5rem 0.85rem; font-size: 0.85rem; min-height: 36px; }
+
+/* ---- Form controls (shared by the builder, onboarding, settings) ---- */
+input[type="text"], input[type="number"], select, textarea {
+  background: var(--iron);
+  color: var(--chalk);
+  border: 1px solid var(--steel-2);
+  border-radius: 4px;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  width: 100%;
+}
+input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+  border-color: var(--recover);
+}
+input[type="number"] { font-variant-numeric: tabular-nums; }
+label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.85rem; color: var(--dim); }
+fieldset { border: 1px solid var(--steel-2); border-radius: 6px; padding: 1rem; margin: 0 0 1rem; }
+legend { padding: 0 0.5rem; color: var(--dim); font-size: 0.85rem; }
+textarea { resize: vertical; }
+
+/* ---- Exercise figure base styling ----
+   Deliberately placed early, before any screen-specific section: every context that shows a
+   figure (step__figure, day-editor__thumb, figure-picker__preview, rest__next-figure) sizes the
+   *wrapper* to a specific box and relies on this base rule only for width:100%/height:100% - so
+   this must lose the cascade to every later, more specific sizing context by file order. */
+.figure { width: 100%; height: 100%; display: block; overflow: visible; }
+.figure__bone { fill: none; stroke: var(--chalk); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
+.figure__bone--far { stroke: var(--chalk-dim); stroke-width: 2.6; opacity: 0.55; }
+.figure__head { fill: none; stroke: var(--chalk); stroke-width: 3.2; }
+.figure__floor { stroke: var(--steel-2); stroke-width: 1.5; }
+.figure__prop { stroke: var(--dim); stroke-width: 1.6; opacity: 0.6; }
+.figure__prop--bar { stroke: var(--chalk-dim); stroke-width: 2.2; opacity: 0.8; }
+.figure__prop-fill { fill: var(--steel-2); }
+.figure__equipment rect { fill: var(--effort); }
+
+.figure--empty .figure__head--empty { stroke: var(--dim); stroke-dasharray: 2.5 3; }
+.figure--empty .figure__bone--empty { stroke: var(--dim); stroke-width: 2.4; stroke-dasharray: 2.5 3; }
+.figure__empty-label { fill: var(--dim); font-size: 15px; font-variation-settings: var(--wght-bold), var(--width-normal); }
+
+/* On the flooded-cyan rest panel, figures switch to the dark ink so they still read against the
+   light ground - the same precedence logic, just re-themed for the inverted surface. */
+.step--rest .figure__bone { stroke: var(--recover-ink); }
+.step--rest .figure__bone--far { stroke: var(--recover-ink); opacity: 0.45; }
+.step--rest .figure__head { stroke: var(--recover-ink); }
+.step--rest .figure__prop, .step--rest .figure__prop--bar { stroke: var(--recover-ink); opacity: 0.5; }
+.step--rest .figure__floor { stroke: rgba(7, 36, 48, 0.3); }
+.step--rest .figure__equipment rect { fill: var(--recover-ink); }
+
+/* ---- Onboarding ---- */
+.onboarding { max-width: 560px; margin: 0 auto; padding: 4rem 1.5rem 3rem; }
+.onboarding__title {
+  font-size: 2.4rem;
+  margin-bottom: 0.6rem;
+  font-variation-settings: var(--wght-bold), var(--width-expanded);
+}
+.onboarding__subtitle { color: var(--dim); line-height: 1.55; margin-bottom: 2.5rem; max-width: 46ch; }
+.onboarding__card {
+  background: var(--iron-2);
+  border: 1px solid var(--steel-2);
+  border-left: 3px solid var(--effort);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+.onboarding__card-title { font-size: 1.2rem; margin: 0 0 0.4rem; }
+.onboarding__card-body { color: var(--dim); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1.1rem; }
+
+/* ---- Home ---- */
+.home { max-width: 640px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+.home__top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+.home__title {
+  font-size: 1.15rem;
+  color: var(--dim);
+  font-variation-settings: var(--wght-medium), var(--width-normal);
+  margin: 0;
+  padding-top: 0.5rem;
+}
+.home__top-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+.home__day-select { display: flex; gap: 0.35rem; margin: 1.75rem 0; flex-wrap: wrap; }
+.day-pill {
+  border: 1px solid var(--steel-2);
+  background: transparent;
+  color: var(--dim);
+  border-radius: 999px;
+  padding: 0.5rem 1.1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  min-height: 40px;
+  font-variation-settings: var(--wght-medium), var(--width-normal);
+}
+.day-pill--today { border-color: var(--recover); color: var(--recover); }
+.day-pill--active { background: var(--effort); border-color: var(--effort); color: var(--effort-ink); font-variation-settings: var(--wght-bold), var(--width-normal); }
+
+.home__card { background: var(--iron-2); border: 1px solid var(--steel-2); padding: 2rem; }
+.home__session-name { font-size: 2.2rem; font-variation-settings: var(--wght-bold), var(--width-expanded); }
+.home__target { color: var(--dim); margin-top: 0.35rem; font-variant-numeric: tabular-nums; }
+.home__note { color: var(--dim); margin-top: 1rem; line-height: 1.5; }
+.home__last-run { margin-top: 1rem; font-size: 0.9rem; color: var(--dim); font-variant-numeric: tabular-nums; }
+
+/* ---- Session shell ---- */
+.session { max-width: 640px; margin: 0 auto; padding: 1rem 1.25rem 2rem; min-height: 100%; display: flex; flex-direction: column; }
+.session__header { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.session__day-label { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.25; }
+.session__day { color: var(--dim); font-size: 0.8rem; }
+.session__name { font-size: 1rem; font-variation-settings: var(--wght-bold), var(--width-normal); }
+.session__body { flex: 1; display: flex; align-items: center; justify-content: center; padding: 1.25rem 0; }
+.session__footer { display: flex; gap: 0.75rem; }
+.session__footer .btn { flex: 1; }
+
+/* ---- The session track: the one bold element ---- */
+.track { margin: 1rem 0 0.5rem; }
+.track__bar {
+  position: relative;
+  height: 10px;
+  background: var(--steel);
+  overflow: visible;
+}
+.track__seg { position: absolute; top: 0; bottom: 0; }
+.track__seg--work { background: var(--effort); opacity: 0.55; }
+.track__seg--rest { background: var(--recover); opacity: 0.4; }
+.track__seg--prep { background: var(--dim); opacity: 0.25; }
+.track__marker {
+  position: absolute;
+  top: -4px;
+  width: 2px;
+  height: 18px;
+  background: var(--chalk);
+  transform: translateX(-1px);
+}
+.track__marker--step { background: var(--chalk); z-index: 2; }
+.track__marker--time { background: var(--chalk-dim); opacity: 0.6; z-index: 1; }
+.track__marker--time.track__marker--slip { background: var(--slip); opacity: 1; width: 3px; }
+.track__count {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* ---- Drift chip ---- */
+.drift-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: var(--dim);
+  margin: 0.4rem auto 0;
+  padding: 0.3rem 0;
+}
+.drift-chip__value { font-variant-numeric: tabular-nums; font-variation-settings: var(--wght-bold), var(--width-normal); color: var(--chalk); }
+.drift-chip--behind .drift-chip__value { color: var(--slip); }
+.drift-chip--ahead .drift-chip__value { color: var(--recover); }
+.drift-chip__action {
+  border: 1px solid var(--slip);
+  background: transparent;
+  color: var(--slip);
+  border-radius: 999px;
+  padding: 0.3rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.78rem;
+  min-height: 32px;
+}
+.drift-chip__note { color: var(--slip); font-size: 0.8rem; }
+
+/* ---- Step views ---- */
+.step { width: 100%; text-align: center; }
+.step__label { color: var(--dim); font-size: 0.95rem; margin-bottom: 0.4rem; }
+.step__title {
+  font-size: 2.1rem;
+  margin: 0.2rem 0;
+  line-height: 1.15;
+  font-variation-settings: var(--wght-bold), var(--width-expanded);
+}
+.step__prescription {
+  font-size: 1.3rem;
+  color: var(--effort);
+  font-variation-settings: var(--wght-bold), var(--width-normal);
+  margin-bottom: 0.5rem;
+  font-variant-numeric: tabular-nums;
+}
+.step__timer {
+  font-size: 5.5rem;
+  line-height: 1;
+  margin: 0.6rem 0;
+  font-variant-numeric: tabular-nums;
+  font-variation-settings: var(--wght-bold), var(--width-expanded);
+}
+.step__timer--rest { color: var(--recover-ink); }
+.step__notes { color: var(--dim); font-size: 1.02rem; line-height: 1.5; max-width: 440px; margin: 0.5rem auto 1.25rem; }
+.step__failure-badge {
+  display: inline-block;
+  background: var(--effort);
+  color: var(--effort-ink);
+  font-variation-settings: var(--wght-bold), var(--width-normal);
+  font-size: 0.78rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 3px;
+  margin-bottom: 0.5rem;
+}
+
+/* Work: dark, spare, orange accents. Rest: floods cyan, ink-dark numerals - readable across a
+   room and unmistakably a different state from work at a glance. */
+.step--rest {
+  background: var(--recover);
+  color: var(--recover-ink);
+  padding: 2.25rem 1.5rem;
+  margin: 0 -1.25rem;
+}
+.step--rest .step__label { color: var(--recover-ink); opacity: 0.7; }
+.step--paused { padding: 3rem 0; }
+
+.step__log { display: flex; align-items: flex-end; gap: 0.75rem; justify-content: center; margin: 0 auto 1.1rem; max-width: 320px; }
+.step__log label { text-align: left; }
+.step__log input { width: 6rem; text-align: center; }
+.step__log-hide { background: none; border: none; color: var(--dim); font-size: 1.3rem; cursor: pointer; line-height: 1; padding: 0.4rem; min-height: 44px; min-width: 44px; }
+
+/* ---- Rest: "next up" ---- */
+.rest__next {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-align: left;
+  margin: 1.5rem auto 1.75rem;
+  max-width: 420px;
+  background: rgba(7, 36, 48, 0.12);
+  border: 1px solid rgba(7, 36, 48, 0.25);
+  padding: 0.9rem 1.1rem;
+}
+.rest__next-figure { width: 64px; height: 64px; flex-shrink: 0; }
+.rest__next-text { display: flex; flex-direction: column; gap: 0.1rem; }
+.rest__next-label { font-size: 0.72rem; opacity: 0.65; }
+.rest__next-name { font-size: 1.1rem; font-variation-settings: var(--wght-bold), var(--width-normal); }
+.rest__next-detail, .rest__next-prescription { font-size: 0.85rem; opacity: 0.75; font-variant-numeric: tabular-nums; }
+
+/* ---- Exercise figure sizing contexts (base .figure styling lives near the top of this file) ---- */
+.exercise-image { display: flex; align-items: center; justify-content: center; }
+.step__figure { width: 100%; max-width: 260px; aspect-ratio: 1; margin: 0.5rem auto 0.75rem; }
+.day-editor__thumb { width: 48px; height: 48px; flex-shrink: 0; }
+.figure-picker__preview { width: 72px; height: 72px; flex-shrink: 0; }
+
+/* ---- Done ---- */
+.done { max-width: 560px; margin: 0 auto; padding: 3rem 1.5rem; text-align: center; }
+.done__title { font-size: 1.5rem; margin-bottom: 0.25rem; }
+.done__session-name { color: var(--dim); margin-bottom: 2rem; }
+.done__stats { display: flex; justify-content: space-around; margin-bottom: 2rem; }
+.done__stat { display: flex; flex-direction: column; gap: 0.25rem; }
+.done__stat-value {
+  font-size: 1.9rem;
+  font-variant-numeric: tabular-nums;
+  font-variation-settings: var(--wght-bold), var(--width-expanded);
+}
+.done__stat-value--over { color: var(--slip); }
+.done__stat-value--under { color: var(--recover); }
+.done__stat-label { color: var(--dim); font-size: 0.85rem; }
+.done__tier-suggestion {
+  background: rgba(84, 199, 232, 0.12);
+  border: 1px solid rgba(84, 199, 232, 0.35);
+  color: var(--recover);
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem;
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+.done__section-title { font-size: 0.9rem; text-align: left; color: var(--dim); margin-bottom: 0.5rem; }
+.done__log { text-align: left; margin-bottom: 1.5rem; }
+.done__log-group { display: flex; justify-content: space-between; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--steel-2); }
+.done__log-name { font-variation-settings: var(--wght-medium), var(--width-normal); }
+.done__log-sets { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end; color: var(--dim); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.done__maxtimes ul { list-style: none; padding: 0; margin: 0 0 1.5rem; text-align: left; }
+.done__maxtimes li { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--steel-2); font-variant-numeric: tabular-nums; }
+
+/* ---- History ---- */
+.history { max-width: 640px; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
+.history__header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.history__title { margin: 0; font-size: 1.3rem; }
+.history__empty { color: var(--dim); font-size: 0.9rem; }
+.history__section-title { font-size: 0.9rem; color: var(--dim); margin: 1.75rem 0 0.6rem; }
+.history__session-row, .history__row {
+  display: flex; justify-content: space-between; gap: 1rem; padding: 0.6rem 0;
+  border-bottom: 1px solid var(--steel-2); font-size: 0.9rem; font-variant-numeric: tabular-nums;
+}
+.history__row-set { margin-left: 0.5rem; color: var(--dim); }
+
+/* ---- Settings ---- */
+.settings { max-width: 560px; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
+.settings__header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.settings__title { margin: 0; font-size: 1.3rem; }
+.settings__section { margin-bottom: 2rem; }
+.settings__section-title { font-size: 0.9rem; color: var(--dim); margin-bottom: 0.5rem; }
+.settings__hint { color: var(--dim); font-size: 0.85rem; line-height: 1.5; margin-bottom: 1rem; }
+.settings__radio {
+  display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem;
+  border: 1px solid var(--steel-2); margin-bottom: 0.5rem; cursor: pointer; line-height: 1.4;
+}
+.settings__radio input { margin-top: 0.3rem; }
+.settings__confirm { background: var(--iron-2); border: 1px solid var(--slip); padding: 1rem; }
+.settings__confirm p { margin: 0 0 0.75rem; color: var(--dim); font-size: 0.9rem; }
+.settings__confirm-actions { display: flex; gap: 0.75rem; }
+
+/* ---- Program editor ---- */
+.program-editor { max-width: 640px; margin: 0 auto; padding: 1.25rem 1.25rem 3rem; }
+.program-editor__header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+.program-editor__title {
+  font-size: 1.25rem;
+  font-variation-settings: var(--wght-bold), var(--width-normal);
+  border: none;
+  background: transparent;
+  padding: 0.25rem 0;
+}
+.program-editor__title:focus { outline: 1px solid var(--steel-2); }
+.program-editor__io { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+.program-editor__import-label { display: inline-flex; align-items: center; cursor: pointer; }
+.program-editor__error { color: var(--danger); font-size: 0.85rem; margin: 0 0 0.75rem; }
+
+/* ---- Day editor ---- */
+.day-editor__header { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin: 1rem 0; }
+.day-editor__session-name input { font-size: 1.05rem; font-variation-settings: var(--wght-bold), var(--width-normal); }
+.day-editor__total { color: var(--dim); font-size: 0.85rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.day-editor__empty { color: var(--dim); font-size: 0.9rem; }
+.day-editor__note { color: var(--dim); line-height: 1.5; margin-bottom: 1rem; }
+.day-editor__list { list-style: none; padding: 0; margin: 0 0 1rem; display: flex; flex-direction: column; gap: 0.4rem; }
+.day-editor__item {
+  display: flex; align-items: center; gap: 0.85rem;
+  background: var(--iron-2); border: 1px solid var(--steel-2); padding: 0.7rem 0.9rem;
+  flex-wrap: wrap;
+}
+.day-editor__item-main { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; flex: 1; }
+.day-editor__item-name { font-variation-settings: var(--wght-medium), var(--width-normal); }
+.day-editor__item-meta { display: flex; gap: 0.6rem; color: var(--dim); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+.day-editor__item-actions { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+
+/* ---- Exercise form ---- */
+.exercise-form { display: flex; flex-direction: column; gap: 0.9rem; padding-bottom: 1rem; }
+.exercise-form__row { display: flex; gap: 0.75rem; }
+.exercise-form__row > label { flex: 1; min-width: 0; }
+.exercise-form__full { width: 100%; }
+.exercise-form__checkbox { flex-direction: row; align-items: center; gap: 0.5rem; color: var(--chalk); }
+.exercise-form__fieldset { display: flex; flex-direction: column; gap: 0.75rem; }
+.exercise-form__preview { color: var(--effort); font-size: 0.85rem; font-variation-settings: var(--wght-medium), var(--width-normal); }
+.exercise-form__actions { display: flex; gap: 0.75rem; justify-content: flex-end; }
+
+/* ---- Timed steps editor ---- */
+.timed-steps { display: flex; flex-direction: column; gap: 0.5rem; }
+.timed-steps__row { display: flex; align-items: center; gap: 0.5rem; }
+.timed-steps__row input[type="text"] { flex: 1; }
+.timed-steps__row input[type="number"] { width: 5rem; }
+.timed-steps__unit { color: var(--dim); font-size: 0.8rem; }
+
+/* ---- Figure picker ---- */
+.figure-picker { display: flex; align-items: center; gap: 1rem; background: var(--iron-2); border: 1px solid var(--steel-2); padding: 0.75rem 1rem; }
+.figure-picker__select { flex: 1; }
+
+/* ---- Responsive: phone ---- */
+@media (max-width: 480px) {
+  .home, .session, .done, .history, .settings, .program-editor, .onboarding {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  .onboarding { padding-top: 2.5rem; }
+  .onboarding__title { font-size: 1.9rem; }
+  .home__session-name { font-size: 1.8rem; }
+  .step__title { font-size: 1.6rem; }
+  .step__timer { font-size: 3.75rem; }
+  .step__prescription { font-size: 1.1rem; }
+  .step--rest { margin: 0 -1rem; padding: 1.75rem 1rem; }
+  .step__figure { max-width: 190px; }
+  .rest__next { flex-direction: column; text-align: center; }
+  .rest__next-text { align-items: center; }
+  .exercise-form__row { flex-direction: column; }
+  .done__stats { gap: 0.5rem; }
+  .done__stat-value { font-size: 1.6rem; }
+  .day-editor__header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+  .figure-picker { flex-direction: column; align-items: flex-start; }
+}
+
+/* Ensure nothing ever forces horizontal scroll on the page body. */
+body { overflow-x: hidden; }
+img, svg { max-width: 100%; }

@@ -1,0 +1,61 @@
+import type { Block } from './types';
+import { sharedWarmup, timedBlock, perSide, repeated } from './helpers';
+
+export const friBlocks: Block[] = [
+  ...sharedWarmup(),
+  {
+    id: 'fri-scap-pullups', phase: 'warmup', mode: 'reps', name: 'Scapular Pull-ups',
+    sourceClockSec: [480, 600], prescription: '2 x 5, slow, unweighted', sets: 2, estWorkSec: 30, restSec: 30, restKind: 'isolation',
+    notes: 'Wakes up the lats before working chin-ups',
+  },
+  { id: 'fri-chinups', phase: 'work', mode: 'tiered', name: 'Chin-ups (palms facing you)', sourceClockSec: [600, 1020],
+    barExercise: 'chinup', notes: 'Squeeze shoulder blades down at top - back thickness + biceps' },
+  {
+    id: 'fri-row', phase: 'work', mode: 'unilateral', name: 'Single-arm DB Row',
+    sourceClockSec: [1020, 1560], prescription: '3 x 15/arm', sets: 3, estWorkSec: 45, restSec: 90, restKind: 'compound',
+    notes: 'Full stretch at bottom',
+  },
+  {
+    id: 'fri-superset1', phase: 'work', mode: 'superset', name: 'Incline Floor Press + Bent-over Reverse Fly',
+    sourceClockSec: [1560, 2160], rounds: 3, switchSec: 15, restSec: 90, restKind: 'superset',
+    exerciseA: { name: 'DB Incline Floor Press', prescription: '15-20', kind: 'reps', estWorkSec: 47.5, notes: 'Full stretch, squeeze at top' },
+    exerciseB: { name: 'Bent-over DB Reverse Fly', prescription: '15-20', kind: 'reps', estWorkSec: 47.5, notes: 'Rear delts - offsets all the pulling' },
+  },
+  {
+    id: 'fri-superset2', phase: 'work', mode: 'superset', name: 'Incline DB Curl + Close-Grip Push-ups',
+    sourceClockSec: [2160, 2880], rounds: 4, switchSec: 15, restSec: 90, restKind: 'superset',
+    exerciseA: { name: 'Incline DB Curl', prescription: '12-15', kind: 'reps', estWorkSec: 37.5, notes: 'Arms hang behind torso, deep stretch at bottom' },
+    exerciseB: { name: 'Close-Grip Push-ups', prescription: 'AMRAP', kind: 'reps', estWorkSec: 37.5, amrap: true, notes: 'Elbows tucked' },
+  },
+  {
+    id: 'fri-hammer', phase: 'work', mode: 'reps', name: 'Hammer Curl (neutral grip)',
+    sourceClockSec: [2880, 3180], prescription: '3 x 15-20', sets: 3, estWorkSec: 40, restSec: 60, restKind: 'isolation',
+    notes: "Brachioradialis - doesn't cross the wrist, only trainable via elbow flexion",
+  },
+  {
+    id: 'fri-lateral', phase: 'work', mode: 'reps', name: 'DB Lateral Raise',
+    sourceClockSec: [3180, 3480], prescription: '3 x 15-20', sets: 3, estWorkSec: 40, restSec: 60, restKind: 'isolation',
+    notes: '7kg is a genuinely good load for this exercise',
+  },
+  {
+    id: 'fri-forearm', phase: 'work', mode: 'reps', name: 'DB Pronation/Supination Twist',
+    sourceClockSec: [3480, 3660], prescription: '2 x 15/direction', sets: 2, estWorkSec: 45, restSec: 45, restKind: 'isolation',
+    notes: 'FOREARM FINISHER - hold one end of a DB, rotate palm-up to palm-down',
+  },
+  timedBlock('cooldown', 'Doorway/Wall Lat Stretch', [3660, 3720], perSide(30),
+    'After chin-ups and rows'),
+  timedBlock('cooldown', 'Biceps Doorway Stretch', [3720, 3780], perSide(30),
+    'Arm straight, palm on doorframe behind you, rotate away'),
+  timedBlock('cooldown', 'Overhead Triceps Stretch', [3780, 3840], perSide(30),
+    'After close-grip push-ups'),
+  timedBlock('cooldown', 'Chest Doorway Stretch', [3840, 3900], perSide(30),
+    'After incline press'),
+  timedBlock('cooldown', 'Cross-body Shoulder Stretch', [3900, 3960], perSide(30),
+    'Rear delts after reverse flyes and lateral raises'),
+  timedBlock('cooldown', 'Wrist Flexor Stretch', [3960, 4020], perSide(30),
+    'Arm extended, palm up, pull fingers back'),
+  timedBlock('cooldown', 'Wrist Extensor Stretch', [4020, 4080], perSide(30),
+    'After the rotation work'),
+  timedBlock('cooldown', 'Thoracic Extension Over a Chair Edge', [4080, 4140], repeated(2, 30),
+    'Kneel, elbows on chair seat, let chest sink - opens the upper back after heavy pulling'),
+];
