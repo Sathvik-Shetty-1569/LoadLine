@@ -122,6 +122,19 @@ export function validateProgram(data: unknown): string | null {
   return null;
 }
 
+/** The optional exercise-info fields (`videoUrl` / `tags` / `focus`), shared by a block and by
+ * each half of a superset. Only checked when present - all three are optional. */
+function validateInfoFields(o: Record<string, unknown>, where: string): string | null {
+  if ('videoUrl' in o && typeof o.videoUrl !== 'string') return `${where}: "videoUrl" must be a string.`;
+  if ('focus' in o && typeof o.focus !== 'string') return `${where}: "focus" must be a string.`;
+  if ('tags' in o && o.tags !== undefined) {
+    if (!Array.isArray(o.tags) || o.tags.some((t) => typeof t !== 'string')) {
+      return `${where}: "tags" must be an array of strings.`;
+    }
+  }
+  return null;
+}
+
 function validateBlock(block: unknown, where: string): string | null {
   if (!isObj(block)) return `${where}: expected an object.`;
   if (typeof block.id !== 'string' || !block.id) return `${where}: missing "id".`;
@@ -132,6 +145,8 @@ function validateBlock(block: unknown, where: string): string | null {
   if (typeof block.mode !== 'string' || !MODES.includes(block.mode)) {
     return `${where}: "mode" must be one of ${MODES.join(', ')}.`;
   }
+  const infoErr = validateInfoFields(block, where);
+  if (infoErr) return infoErr;
 
   const num = (field: string): string | null =>
     typeof (block as Record<string, unknown>)[field] !== 'number' ? `${where}: "${field}" must be a number.` : null;
@@ -161,6 +176,8 @@ function validateBlock(block: unknown, where: string): string | null {
         if (!isObj(ex) || typeof ex.name !== 'string' || (ex.kind !== 'reps' && ex.kind !== 'hold')) {
           return `${where}: "${key}" needs a "name" and kind of "reps" or "hold".`;
         }
+        const exErr = validateInfoFields(ex, `${where}: "${key}"`);
+        if (exErr) return exErr;
       }
       return null;
     }

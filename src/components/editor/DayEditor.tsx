@@ -16,6 +16,12 @@ const MODE_LABELS: Record<Block['mode'], string> = {
   hold: 'Timed hold', maxtime: 'Max-effort hold', superset: 'Superset pair', tiered: 'Tiered (built-in)',
 };
 
+/** Info tags for the list row - superset blocks carry them on their first sub-exercise. */
+function blockTags(block: Block): string[] {
+  if (block.mode === 'superset') return block.exerciseA.tags ?? [];
+  return block.tags ?? [];
+}
+
 /** image/figure live on different fields depending on block mode - superset blocks carry them on
  * their first sub-exercise, tiered blocks have neither (they resolve by name at render time). */
 function blockVisual(block: Block): { image?: string | null; figure?: string | null } {
@@ -118,6 +124,13 @@ export function DayEditor({ day, tier, onChange }: Props) {
                   <span>{MODE_LABELS[block.mode]}</span>
                   <span>~{Math.round(blockDurationSec(block, tier) / 6) / 10} min</span>
                 </span>
+                {blockTags(block).length > 0 && (
+                  <span className="step__tags step__tags--row">
+                    {blockTags(block).map((t) => (
+                      <span className="step__tag" key={t}>{t}</span>
+                    ))}
+                  </span>
+                )}
               </div>
               <div className="day-editor__item-actions">
                 <button type="button" className="btn btn--ghost btn--small" onClick={() => move(i, -1)} disabled={i === 0}>↑</button>

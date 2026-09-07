@@ -15,6 +15,12 @@ function nextId(): string {
   return `step-${seq}`;
 }
 
+/** The exercise-info fields that ride along from a block (or a superset sub-exercise) onto every
+ * one of its non-rest steps, so the Session screen can show them per set. */
+function infoOf(src: { videoUrl?: string; tags?: string[]; focus?: string }): Pick<Step, 'videoUrl' | 'tags' | 'focus'> {
+  return { videoUrl: src.videoUrl, tags: src.tags, focus: src.focus };
+}
+
 export function compileSession(blocks: Block[], tier: PullupTier): Step[] {
   const out: Step[] = [];
 
@@ -25,7 +31,7 @@ export function compileSession(blocks: Block[], tier: PullupTier): Step[] {
           out.push({
             id: nextId(), blockId: block.id, blockName: block.name, phase: block.phase, kind: 'timed',
             label: block.name, detail: s.label, notes: block.notes, durationSec: s.durationSec,
-            figure: block.figure,
+            figure: block.figure, ...infoOf(block),
           });
         }
         break;
@@ -38,7 +44,7 @@ export function compileSession(blocks: Block[], tier: PullupTier): Step[] {
             id: nextId(), blockId: block.id, blockName: block.name, phase: block.phase, kind: 'work',
             label: block.name, detail: `Set ${i} of ${block.sets}`, notes: block.notes, image: block.image,
             figure: block.figure, prescription: block.prescription, durationSec: block.estWorkSec,
-            isLastSet: isLast, toFailure: isLast && !!block.toFailureLastSet,
+            isLastSet: isLast, toFailure: isLast && !!block.toFailureLastSet, ...infoOf(block),
           });
           out.push({
             id: nextId(), blockId: block.id, blockName: block.name, phase: block.phase, kind: 'rest',
@@ -55,13 +61,14 @@ export function compileSession(blocks: Block[], tier: PullupTier): Step[] {
             id: nextId(), blockId: block.id, blockName: block.name, phase: block.phase, kind: 'work',
             label: block.name, detail: `Set ${i} of ${block.sets} - Left`, notes: block.notes,
             image: block.image, figure: block.figure, prescription: block.prescription,
-            durationSec: block.estWorkSec,
+            durationSec: block.estWorkSec, ...infoOf(block),
           });
           out.push({
             id: nextId(), blockId: block.id, blockName: block.name, phase: block.phase, kind: 'work',
             label: block.name, detail: `Set ${i} of ${block.sets} - Right`, notes: block.notes,
             image: block.image, figure: block.figure, prescription: block.prescription,
             durationSec: block.estWorkSec, isLastSet: isLast, toFailure: isLast && !!block.toFailureLastSet,
+            ...infoOf(block),
           });
           out.push({
             id: nextId(), blockId: block.id, blockName: block.name, phase: block.phase, kind: 'rest',
@@ -77,7 +84,7 @@ export function compileSession(blocks: Block[], tier: PullupTier): Step[] {
           out.push({
             id: nextId(), blockId: h.id, blockName: h.name, phase: h.phase, kind: 'hold',
             label: h.name, detail: `Set ${i} of ${h.sets}`, notes: h.notes, image: h.image,
-            figure: h.figure, prescription: h.prescription, durationSec: h.holdSec,
+            figure: h.figure, prescription: h.prescription, durationSec: h.holdSec, ...infoOf(h),
           });
           out.push({
             id: nextId(), blockId: h.id, blockName: h.name, phase: h.phase, kind: 'rest',
@@ -93,6 +100,7 @@ export function compileSession(blocks: Block[], tier: PullupTier): Step[] {
             id: nextId(), blockId: block.id, blockName: block.name, phase: block.phase, kind: 'maxtime',
             label: block.name, detail: `Set ${i} of ${block.sets}`, notes: block.notes, image: block.image,
             figure: block.figure, prescription: block.prescription, durationSec: block.estWorkSec,
+            ...infoOf(block),
           });
           out.push({
             id: nextId(), blockId: block.id, blockName: block.name, phase: block.phase, kind: 'rest',
@@ -116,7 +124,7 @@ export function compileSession(blocks: Block[], tier: PullupTier): Step[] {
               label: ex.name, detail: `Round ${r} of ${block.rounds}${ex.amrap ? ' - AMRAP' : ''}`,
               notes: ex.notes, image: ex.image, figure: ex.figure, prescription: ex.prescription,
               durationSec: ex.kind === 'hold' ? (ex.holdSec ?? 0) : (ex.estWorkSec ?? 0),
-              isLastSet: isLastRound, toFailure: isLastRound && !!ex.amrap,
+              isLastSet: isLastRound, toFailure: isLastRound && !!ex.amrap, ...infoOf(ex),
             });
             if (tag === 'A') {
               out.push({
@@ -143,6 +151,7 @@ export function compileSession(blocks: Block[], tier: PullupTier): Step[] {
               kind: plan.holdSec !== undefined ? 'hold' : 'work',
               label: plan.label, detail: `Set ${i} of ${plan.sets}`, notes: block.notes,
               prescription: plan.prescription, durationSec: plan.holdSec ?? plan.estWorkSec ?? 0, isLastSet: isLast,
+              ...infoOf(block),
             });
             out.push({
               id: nextId(), blockId: block.id, blockName: plan.label, phase: block.phase, kind: 'rest',

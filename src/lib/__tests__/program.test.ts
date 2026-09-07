@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { program } from '../../data/program';
 import { compileSession, timedFloorSec, AUTO_KINDS } from '../compileSession';
 import { dayScheduleSec } from '../schedule';
-import type { RestKind } from '../../data/types';
+import type { Block, RestKind } from '../../data/types';
 
 const NEVER_TRIM: RestKind[] = ['compound', 'unilateral', 'hold', 'superset'];
 const LIFTING_DAYS = ['mon', 'tue', 'thu', 'fri'] as const;
@@ -131,6 +131,24 @@ describe('compileSession', () => {
     expect(supersetSteps[1].kind).toBe('switch');
     expect(supersetSteps[2].kind).toBe('hold'); // Plank
     expect(supersetSteps[3].kind).toBe('rest');
+  });
+
+  it('carries videoUrl / tags / focus from a block onto its non-rest steps only', () => {
+    const block: Block = {
+      id: 'info-x', phase: 'work', mode: 'reps', name: 'Test Lift', prescription: '2 x 10', sets: 2,
+      estWorkSec: 30, restSec: 60, restKind: 'isolation',
+      videoUrl: 'https://example.test/demo', tags: ['strength', 'hypertrophy'], focus: 'Quads, glutes',
+    };
+    const steps = compileSession([block], 2);
+    const work = steps.filter((s) => s.kind === 'work');
+    expect(work).toHaveLength(2);
+    for (const s of work) {
+      expect(s.videoUrl).toBe('https://example.test/demo');
+      expect(s.tags).toEqual(['strength', 'hypertrophy']);
+      expect(s.focus).toBe('Quads, glutes');
+    }
+    expect(steps.find((s) => s.kind === 'rest')?.tags).toBeUndefined();
+    expect(steps.find((s) => s.kind === 'rest')?.videoUrl).toBeUndefined();
   });
 
   it('timedFloorSec sums every step, including manual work/maxtime schedule estimates', () => {

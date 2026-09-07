@@ -1,4 +1,5 @@
 import { formatDrift } from '../lib/drift';
+import { formatDuration } from '../lib/date';
 import type { SessionLogEntry } from '../lib/storage';
 import type { TierUpgradeSuggestion } from '../lib/sessionLog';
 
@@ -18,6 +19,16 @@ export function Done({ entry, sessionName, tierSuggestion, onDone }: Props) {
     const group = byExercise.find((g) => g.name === s.exerciseName);
     if (group) group.sets.push(s);
     else byExercise.push({ name: s.exerciseName, sets: [s] });
+  }
+
+  const exerciseTimes = entry.exerciseTimes ?? [];
+
+  // Count skipped ("not performed") steps per exercise, in first-seen order.
+  const skipped: { name: string; count: number }[] = [];
+  for (const sk of entry.skips ?? []) {
+    const group = skipped.find((g) => g.name === sk.exerciseName);
+    if (group) group.count += 1;
+    else skipped.push({ name: sk.exerciseName, count: 1 });
   }
 
   return (
@@ -75,6 +86,34 @@ export function Done({ entry, sessionName, tierSuggestion, onDone }: Props) {
               <li key={i}>
                 <span>{log.label}</span>
                 <span>{log.sec}s</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {exerciseTimes.length > 0 && (
+        <div className="done__exercise-times">
+          <h2 className="done__section-title">Time per exercise</h2>
+          <ul>
+            {exerciseTimes.map((t) => (
+              <li key={t.blockId}>
+                <span>{t.name}</span>
+                <span>{formatDuration(t.sec)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {skipped.length > 0 && (
+        <div className="done__skips">
+          <h2 className="done__section-title">Not performed</h2>
+          <ul>
+            {skipped.map((s) => (
+              <li key={s.name}>
+                <span>{s.name}</span>
+                <span>{s.count === 1 ? 'skipped' : `${s.count} skipped`}</span>
               </li>
             ))}
           </ul>

@@ -10,7 +10,8 @@ import { RestView } from '../components/RestView';
 import { DriftChip } from '../components/DriftChip';
 import { SessionTrack } from '../components/SessionTrack';
 import { getHistory, type SessionLogEntry } from '../lib/storage';
-import { getLastSetValues, type SetLogRecord } from '../lib/sessionLog';
+import { getLastSetValues, type SetLogRecord, type SkipRecord } from '../lib/sessionLog';
+import { exerciseTotals } from '../lib/exerciseTime';
 
 interface Props {
   day: DayProgram;
@@ -27,7 +28,19 @@ export function Session({ day, tier, soundOn, onExit, onComplete }: Props) {
   const [isolationTrimApplied, setIsolationTrimApplied] = useState(false);
   const maxTimeLogs = useRef<{ label: string; sec: number }[]>([]);
   const setLogs = useRef<SetLogRecord[]>([]);
+  const skips = useRef<SkipRecord[]>([]);
   const history = useRef(getHistory()).current;
+
+  // Real time spent on each step, index-aligned with `steps`, pauses excluded. Folded into
+  // per-exercise totals at the end (see lib/exerciseTime.ts).
+  const stepElapsedMs = useRef<number[]>([]);
+  const stepEnteredAtRef = useRef<number>(Date.now());
+
+  function recordCurrentStepTime() {
+    stepElapsedMs.current[currentIndex] =
+      (stepElapsedMs.current[currentIndex] ?? 0) + (Date.now() - stepEnteredAtRef.current);
+    stepEnteredAtRef.current = Date.now();
+  }
 
   const currentStep = steps[currentIndex] as Step | undefined;
   const nextStep = steps[currentIndex + 1] ?? null;
@@ -56,9 +69,12 @@ export function Session({ day, tier, soundOn, onExit, onComplete }: Props) {
   }, []);
 
   const blippedRef = useRef(new Set<number>());
+  // Only rest auto-advances when its countdown ends. Exercise steps (timed warm-up/cool-down
+  // moves, holds, superset switches) chime but wait for a manual "Next" - the clock is a guide,
+  // not a trigger.
   const handleAutoComplete = () => {
     if (soundOn) playStepComplete();
-    goNext();
+    if (currentStep?.kind === 'rest') goNext();
   };
   const countdown = useCountdown(currentStep?.durationSec ?? 0, handleAutoComplete);
   const stopwatch = useStopwatch();
@@ -69,6 +85,7 @@ export function Session({ day, tier, soundOn, onExit, onComplete }: Props) {
   // Reset the shared timer whenever the current step changes.
   useEffect(() => {
     blippedRef.current = new Set();
+    stepEnteredAtRef.current = Date.now();
     if (!currentStep) return;
     if (AUTO_KINDS.includes(currentStep.kind)) {
       countdown.reset(currentStep.durationSec);
@@ -92,15 +109,35 @@ export function Session({ day, tier, soundOn, onExit, onComplete }: Props) {
     const actualSec = sessionClock.stop();
     if (soundOn) playSessionComplete();
     const targetSec = dayTargetSec(day, tier);
-    onComplete({ targetSec, actualSec, maxTimeLogs: maxTimeLogs.current, sets: setLogs.current });
+    onComplete({
+      targetSec,
+      actualSec,
+      maxTimeLogs: maxTimeLogs.current,
+      sets: setLogs.current,
+      skips: skips.current,
+      exerciseTimes: exerciseTotals(steps, stepElapsedMs.current),
+    });
   }
 
   function goNext() {
+    recordCurrentStepTime();
     if (currentIndex + 1 >= steps.length) {
       finishSession();
       return;
     }
     setCurrentIndex((i) => i + 1);
+  }
+
+  /** "Skip - not done": the set/step was not performed. Records it, then advances like Next. */
+  function skipStep() {
+    if (currentStep) {
+      skips.current.push({
+        exerciseId: currentStep.blockId,
+        exerciseName: currentStep.blockName,
+        detail: currentStep.detail,
+      });
+    }
+    goNext();
   }
 
   function completeWork(log?: SetLog) {
@@ -125,6 +162,7 @@ export function Session({ day, tier, soundOn, onExit, onComplete }: Props) {
 
   function goBack() {
     if (currentIndex === 0) return;
+    recordCurrentStepTime();
     setCurrentIndex((i) => i - 1);
   }
 
@@ -134,9 +172,11 @@ export function Session({ day, tier, soundOn, onExit, onComplete }: Props) {
       const next = !p;
       if (next) {
         sessionClock.stop();
+        recordCurrentStepTime(); // bank time up to the pause; paused time is not counted
         if (isAutoKind) countdown.pause();
       } else {
         sessionClock.start();
+        stepEnteredAtRef.current = Date.now(); // resume the step clock from now
         if (isAutoKind) countdown.start();
       }
       return next;
@@ -202,6 +242,7 @@ export function Session({ day, tier, soundOn, onExit, onComplete }: Props) {
             step={currentStep}
             lastValues={getLastSetValues(history, currentStep.blockId, currentSetIndex)}
             onAdvance={completeWork}
+            onSkip={skipStep}
           />
         ) : currentStep.kind === 'maxtime' ? (
           <MaxTimeStepView
@@ -211,9 +252,15 @@ export function Session({ day, tier, soundOn, onExit, onComplete }: Props) {
             isRunning={stopwatch.isRunning}
             onStart={stopwatch.start}
             onStop={() => completeMaxTime(stopwatch.stop())}
+            onSkip={skipStep}
           />
         ) : (
-          <AutoTimedStepView step={currentStep} remainingSec={countdown.remainingSec} onAdvance={goNext} />
+          <AutoTimedStepView
+            step={currentStep}
+            remainingSec={countdown.remainingSec}
+            onAdvance={goNext}
+            onSkip={skipStep}
+          />
         )}
       </main>
 

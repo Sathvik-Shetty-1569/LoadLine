@@ -10,6 +10,14 @@ export interface SetLogRecord {
   weightKg?: number;
 }
 
+/** One set/step the user explicitly skipped ("Skip - not done"), i.e. did not perform. */
+export interface SkipRecord {
+  exerciseId: string; // Step.blockId
+  exerciseName: string;
+  /** The step's sub-label, e.g. "Set 2 of 4", "Left side". */
+  detail?: string;
+}
+
 /** Most recent logged reps/weight for one exercise+set, used to prefill the next session's inputs.
  * `history` is newest-first (see storage.ts:logSession), so the first match wins. */
 export function getLastSetValues(

@@ -17,6 +17,21 @@ interface SupersetExerciseDraft {
   amrap: boolean;
   /** '' means auto-resolve from name - see FigurePicker. */
   figure: string;
+  videoUrl: string;
+  tags: string[];
+  focus: string;
+}
+
+/** Offered as one-tap toggles in the form; the user can still type any other tag. */
+const COMMON_TAGS = ['cardio', 'hypertrophy', 'strength', 'power', 'mobility', 'endurance', 'core', 'balance'];
+
+function toggleTag(tags: string[], tag: string): string[] {
+  return tags.includes(tag) ? tags.filter((t) => t !== tag) : [...tags, tag];
+}
+
+/** Split "a, b ,c" into ['a','b','c'] and back, for the free-text "other tags" field. */
+function parseTagList(raw: string): string[] {
+  return raw.split(',').map((t) => t.trim()).filter(Boolean);
 }
 
 interface Draft {
@@ -26,6 +41,9 @@ interface Draft {
   notes: string;
   /** '' means auto-resolve from name - see FigurePicker. */
   figure: string;
+  videoUrl: string;
+  tags: string[];
+  focus: string;
   prescription: string;
   sets: number;
   estWorkSec: number;
@@ -65,12 +83,15 @@ const PHASE_LABELS: Record<BlockPhase, string> = {
 };
 
 function blankExercise(kind: 'reps' | 'hold' = 'reps'): SupersetExerciseDraft {
-  return { name: '', prescription: '12-15', notes: '', kind, estWorkSec: 30, holdSec: 30, amrap: false, figure: '' };
+  return {
+    name: '', prescription: '12-15', notes: '', kind, estWorkSec: 30, holdSec: 30, amrap: false,
+    figure: '', videoUrl: '', tags: [], focus: '',
+  };
 }
 
 function draftFromBlock(block: Block | null): Draft {
   const base: Draft = {
-    kind: 'reps', phase: 'work', name: '', notes: '', figure: '',
+    kind: 'reps', phase: 'work', name: '', notes: '', figure: '', videoUrl: '', tags: [], focus: '',
     prescription: '3 x 12-15', sets: 3, estWorkSec: 30, holdSec: 30, restSec: 60, restKind: 'isolation',
     toFailureLastSet: false, steps: [{ label: 'Go', durationSec: 30 }],
     rounds: 3, switchSec: 15, exerciseA: blankExercise('reps'), exerciseB: blankExercise('reps'),
@@ -80,6 +101,9 @@ function draftFromBlock(block: Block | null): Draft {
   base.phase = block.phase;
   base.name = block.name;
   base.notes = block.notes ?? '';
+  base.videoUrl = block.videoUrl ?? '';
+  base.tags = block.tags ?? [];
+  base.focus = block.focus ?? '';
 
   switch (block.mode) {
     case 'timed':
@@ -122,8 +146,14 @@ function draftFromBlock(block: Block | null): Draft {
       base.switchSec = block.switchSec;
       base.restSec = block.restSec;
       base.restKind = block.restKind;
-      base.exerciseA = { ...blankExercise(), ...block.exerciseA, notes: block.exerciseA.notes ?? '', figure: block.exerciseA.figure ?? '' };
-      base.exerciseB = { ...blankExercise(), ...block.exerciseB, notes: block.exerciseB.notes ?? '', figure: block.exerciseB.figure ?? '' };
+      base.exerciseA = {
+        ...blankExercise(), ...block.exerciseA, notes: block.exerciseA.notes ?? '', figure: block.exerciseA.figure ?? '',
+        videoUrl: block.exerciseA.videoUrl ?? '', tags: block.exerciseA.tags ?? [], focus: block.exerciseA.focus ?? '',
+      };
+      base.exerciseB = {
+        ...blankExercise(), ...block.exerciseB, notes: block.exerciseB.notes ?? '', figure: block.exerciseB.figure ?? '',
+        videoUrl: block.exerciseB.videoUrl ?? '', tags: block.exerciseB.tags ?? [], focus: block.exerciseB.focus ?? '',
+      };
       return base;
     case 'tiered':
       // Not editable in the builder (v7-specific) - shouldn't reach here, but fall back safely.
@@ -133,10 +163,21 @@ function draftFromBlock(block: Block | null): Draft {
   }
 }
 
+/** Normalise the shared info fields: blank text -> undefined, empty tag list -> undefined, so a
+ * saved block round-trips cleanly through export/import. */
+function infoFields(d: { videoUrl: string; tags: string[]; focus: string }) {
+  return {
+    videoUrl: d.videoUrl.trim() || undefined,
+    tags: d.tags.length ? d.tags : undefined,
+    focus: d.focus.trim() || undefined,
+  };
+}
+
 function draftToBlock(draft: Draft, id: string): Block {
   const common = {
     id, phase: draft.phase, name: draft.name.trim() || 'Untitled exercise',
     notes: draft.notes.trim() || undefined, figure: draft.figure || undefined,
+    ...infoFields(draft),
   };
   switch (draft.kind) {
     case 'timed':
@@ -167,10 +208,63 @@ function draftToBlock(draft: Draft, id: string): Block {
       return {
         ...common, mode: 'superset', rounds: draft.rounds, switchSec: draft.switchSec,
         restSec: draft.restSec, restKind: draft.restKind,
-        exerciseA: { ...draft.exerciseA, notes: draft.exerciseA.notes.trim() || undefined, figure: draft.exerciseA.figure || undefined },
-        exerciseB: { ...draft.exerciseB, notes: draft.exerciseB.notes.trim() || undefined, figure: draft.exerciseB.figure || undefined },
+        exerciseA: { ...draft.exerciseA, notes: draft.exerciseA.notes.trim() || undefined, figure: draft.exerciseA.figure || undefined, ...infoFields(draft.exerciseA) },
+        exerciseB: { ...draft.exerciseB, notes: draft.exerciseB.notes.trim() || undefined, figure: draft.exerciseB.figure || undefined, ...infoFields(draft.exerciseB) },
       };
   }
+}
+
+/** Shared "info" inputs: form-video link, purpose/target tags, and a one-line target note.
+ * Used for a plain exercise and for each half of a superset. */
+function InfoFieldset({
+  videoUrl, tags, focus, onChange,
+}: {
+  videoUrl: string;
+  tags: string[];
+  focus: string;
+  onChange: (p: { videoUrl?: string; tags?: string[]; focus?: string }) => void;
+}) {
+  const custom = tags.filter((t) => !COMMON_TAGS.includes(t));
+  const [otherText, setOtherText] = useState(custom.join(', '));
+
+  function setCommon(tag: string) {
+    onChange({ tags: [...toggleTag(tags.filter((t) => COMMON_TAGS.includes(t)), tag), ...custom] });
+  }
+  function setOther(text: string) {
+    setOtherText(text);
+    onChange({ tags: [...tags.filter((t) => COMMON_TAGS.includes(t)), ...parseTagList(text)] });
+  }
+
+  return (
+    <div className="exercise-form__info">
+      <div className="exercise-form__tag-toggles">
+        <span className="exercise-form__tag-label">Info tags</span>
+        {COMMON_TAGS.map((t) => (
+          <button
+            key={t}
+            type="button"
+            className={`exercise-form__tag${tags.includes(t) ? ' exercise-form__tag--on' : ''}`}
+            aria-pressed={tags.includes(t)}
+            onClick={() => setCommon(t)}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+      <label className="exercise-form__full">
+        Other tags (comma-separated)
+        <input type="text" value={otherText} onChange={(e) => setOther(e.target.value)} placeholder="e.g. grip, explosive" />
+      </label>
+      <label className="exercise-form__full">
+        Targets (shown as "Targets: ...")
+        <input type="text" value={focus} onChange={(e) => onChange({ focus: e.target.value })} placeholder="e.g. Hamstrings, glutes" />
+      </label>
+      <label className="exercise-form__full">
+        Demo video URL (optional - blank falls back to a YouTube search)
+        <input type="url" value={videoUrl} onChange={(e) => onChange({ videoUrl: e.target.value })} placeholder="https://..." />
+      </label>
+    </div>
+  );
 }
 
 interface Props {
@@ -225,6 +319,10 @@ export function ExerciseForm({ block, onSave, onCancel }: Props) {
 
       {draft.kind !== 'superset' && (
         <FigurePicker name={draft.name} figure={draft.figure} onChange={(figure) => patch({ figure })} />
+      )}
+
+      {draft.kind !== 'superset' && (
+        <InfoFieldset videoUrl={draft.videoUrl} tags={draft.tags} focus={draft.focus} onChange={patch} />
       )}
 
       {draft.kind === 'timed' && (
@@ -339,6 +437,12 @@ export function ExerciseForm({ block, onSave, onCancel }: Props) {
                 name={draft[which].name}
                 figure={draft[which].figure}
                 onChange={(figure) => patchExercise(which, { figure })}
+              />
+              <InfoFieldset
+                videoUrl={draft[which].videoUrl}
+                tags={draft[which].tags}
+                focus={draft[which].focus}
+                onChange={(p) => patchExercise(which, p)}
               />
               <div className="exercise-form__row">
                 <label>

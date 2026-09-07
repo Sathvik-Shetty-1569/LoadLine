@@ -25,6 +25,14 @@ export interface BaseBlock {
    */
   sourceClockSec?: [number, number];
   notes?: string;
+  /** Link to a form/technique video. When unset the UI falls back to a YouTube search for the
+   * exercise name (see `lib/exerciseVideo.ts`). */
+  videoUrl?: string;
+  /** What the movement trains - free strings, but the editor offers a common set
+   * (cardio, hypertrophy, strength, power, mobility, endurance, core, balance). Shown as chips. */
+  tags?: string[];
+  /** One-line "what it targets", e.g. "Hamstrings, glutes". Shown above the prescription. */
+  focus?: string;
 }
 
 /** Warmup or cooldown: always auto-timed, no manual advance. */
@@ -119,6 +127,12 @@ export interface SupersetExercise {
   prescription: string;
   notes?: string;
   image?: string | null;
+  /** See BaseBlock.videoUrl. */
+  videoUrl?: string;
+  /** See BaseBlock.tags. */
+  tags?: string[];
+  /** See BaseBlock.focus. */
+  focus?: string;
   /** See RepsBlock.figure - override for the auto-resolved diagram. */
   figure?: string | null;
   /** 'reps' = manual tap; 'hold' = auto countdown for holdSec. */
@@ -203,6 +217,12 @@ export interface Step {
    * one from `label` when this is unset. */
   figure?: string | null;
   prescription?: string;
+  /** Carried from the block - a form/technique video link (see `lib/exerciseVideo.ts`). */
+  videoUrl?: string;
+  /** Carried from the block - training-quality / target chips. */
+  tags?: string[];
+  /** Carried from the block - one-line "what it targets". */
+  focus?: string;
   /** Planned duration in seconds. For 'work'/'maxtime' this is a hint, not enforced. */
   durationSec: number;
   restKind?: RestKind;

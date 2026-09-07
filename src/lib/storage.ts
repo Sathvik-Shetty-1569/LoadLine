@@ -1,5 +1,6 @@
 import type { PullupTier } from '../data/types';
-import type { SetLogRecord } from './sessionLog';
+import type { SetLogRecord, SkipRecord } from './sessionLog';
+import type { ExerciseTime } from './exerciseTime';
 
 const KEYS = {
   tier: 'gym.pullupTier',
@@ -35,6 +36,11 @@ export interface SessionLogEntry {
   actualSec: number;
   maxTimeLogs: { label: string; sec: number }[];
   sets: SetLogRecord[];
+  /** Sets/steps the user tapped "Skip - not done" on. Absent on entries logged before this
+   * existed - always read as `entry.skips ?? []`. */
+  skips?: SkipRecord[];
+  /** Real wall-clock time spent per exercise. Absent on older entries - read as `?? []`. */
+  exerciseTimes?: ExerciseTime[];
 }
 
 export function logSession(entry: SessionLogEntry): void {

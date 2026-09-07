@@ -96,7 +96,7 @@ button {
 .btn--small { padding: 0.5rem 0.85rem; font-size: 0.85rem; min-height: 36px; }
 
 /* ---- Form controls (shared by the builder, onboarding, settings) ---- */
-input[type="text"], input[type="number"], select, textarea {
+input[type="text"], input[type="number"], input[type="url"], select, textarea {
   background: var(--iron);
   color: var(--chalk);
   border: 1px solid var(--steel-2);
@@ -106,7 +106,7 @@ input[type="text"], input[type="number"], select, textarea {
   font-family: inherit;
   width: 100%;
 }
-input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+input[type="text"]:focus, input[type="number"]:focus, input[type="url"]:focus, select:focus, textarea:focus {
   border-color: var(--recover);
 }
 input[type="number"] { font-variant-numeric: tabular-nums; }
@@ -286,7 +286,34 @@ textarea { resize: vertical; }
   font-variation-settings: var(--wght-bold), var(--width-expanded);
 }
 .step__timer--rest { color: var(--recover-ink); }
+.step__timeup { color: var(--slip); font-size: 0.9rem; margin: 0.35rem 0 0.5rem; }
 .step__notes { color: var(--dim); font-size: 1.02rem; line-height: 1.5; max-width: 440px; margin: 0.5rem auto 1.25rem; }
+
+/* ---- Exercise info: targets line, purpose chips, form-video link ---- */
+.step__info { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; margin: 0.3rem auto 0.85rem; }
+.step__focus { color: var(--chalk-dim); font-size: 0.9rem; }
+.step__tags { display: flex; flex-wrap: wrap; gap: 0.35rem; justify-content: center; }
+.step__tags--rest, .step__tags--row { justify-content: flex-start; margin-top: 0.25rem; }
+.step__tag {
+  border: 1px solid var(--steel-2);
+  color: var(--chalk-dim);
+  border-radius: 999px;
+  padding: 0.12rem 0.6rem;
+  font-size: 0.72rem;
+  font-variation-settings: var(--wght-medium), var(--width-normal);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.step--rest .step__tag { border-color: rgba(7, 36, 48, 0.3); color: var(--recover-ink); opacity: 0.8; }
+.step__video {
+  color: var(--recover);
+  font-size: 0.85rem;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.step__video:hover { border-bottom-color: var(--recover); }
+.step__video--rest { color: var(--recover-ink); }
+.step__actions { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; margin-top: 0.5rem; }
 .step__failure-badge {
   display: inline-block;
   background: var(--effort);
@@ -366,8 +393,9 @@ textarea { resize: vertical; }
 .done__log-group { display: flex; justify-content: space-between; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--steel-2); }
 .done__log-name { font-variation-settings: var(--wght-medium), var(--width-normal); }
 .done__log-sets { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end; color: var(--dim); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
-.done__maxtimes ul { list-style: none; padding: 0; margin: 0 0 1.5rem; text-align: left; }
-.done__maxtimes li { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--steel-2); font-variant-numeric: tabular-nums; }
+.done__maxtimes ul, .done__exercise-times ul, .done__skips ul { list-style: none; padding: 0; margin: 0 0 1.5rem; text-align: left; }
+.done__maxtimes li, .done__exercise-times li, .done__skips li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.5rem 0; border-bottom: 1px solid var(--steel-2); font-variant-numeric: tabular-nums; }
+.done__skips li span:last-child { color: var(--slip); font-size: 0.85rem; }
 
 /* ---- History ---- */
 .history { max-width: 640px; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
@@ -438,6 +466,21 @@ textarea { resize: vertical; }
 .exercise-form__fieldset { display: flex; flex-direction: column; gap: 0.75rem; }
 .exercise-form__preview { color: var(--effort); font-size: 0.85rem; font-variation-settings: var(--wght-medium), var(--width-normal); }
 .exercise-form__actions { display: flex; gap: 0.75rem; justify-content: flex-end; }
+
+.exercise-form__info { display: flex; flex-direction: column; gap: 0.6rem; border: 1px solid var(--steel-2); border-radius: 6px; padding: 0.85rem; }
+.exercise-form__tag-toggles { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+.exercise-form__tag-label { color: var(--dim); font-size: 0.85rem; width: 100%; }
+.exercise-form__tag {
+  border: 1px solid var(--steel-2);
+  background: var(--iron);
+  color: var(--chalk-dim);
+  border-radius: 999px;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+  min-height: 32px;
+}
+.exercise-form__tag--on { background: var(--effort); border-color: var(--effort); color: var(--effort-ink); font-variation-settings: var(--wght-bold), var(--width-normal); }
 
 /* ---- Timed steps editor ---- */
 .timed-steps { display: flex; flex-direction: column; gap: 0.5rem; }

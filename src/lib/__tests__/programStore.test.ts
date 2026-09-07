@@ -56,6 +56,21 @@ describe('export/import round trip', () => {
     expect(result.ok).toBe(true);
     expect(result.program).toEqual(original);
   });
+
+  it('a program carrying exercise info fields (tags / videoUrl / focus) round-trips unchanged', () => {
+    const original = createBlankProgram('Info Routine');
+    original.days[0].blocks.push({
+      ...sampleExercise(),
+      tags: ['strength', 'hypertrophy'],
+      videoUrl: 'https://example.test/demo',
+      focus: 'Quads, glutes',
+    });
+
+    const result = importProgramJson(exportProgramJson(original));
+
+    expect(result.ok).toBe(true);
+    expect(result.program).toEqual(original);
+  });
 });
 
 describe('malformed import is rejected with a readable error, never a partial load', () => {
@@ -92,6 +107,26 @@ describe('malformed import is rejected with a readable error, never a partial lo
     const err = validateProgram(bad);
     expect(err).toBeTruthy();
     expect(err).toMatch(/must be a number/);
+  });
+
+  it('rejects a block whose "tags" is not an array of strings', () => {
+    const bad = {
+      title: 'x',
+      days: [{ key: 'mon', label: 'Monday', sessionName: 'x', blocks: [
+        { id: 'a', phase: 'work', mode: 'reps', name: 'Squat', sets: 3, estWorkSec: 30, restSec: 60, restKind: 'isolation', tags: 'strength' },
+      ] }],
+    };
+    expect(validateProgram(bad)).toMatch(/tags/i);
+  });
+
+  it('rejects a block whose "videoUrl" is not a string', () => {
+    const bad = {
+      title: 'x',
+      days: [{ key: 'mon', label: 'Monday', sessionName: 'x', blocks: [
+        { id: 'a', phase: 'work', mode: 'reps', name: 'Squat', sets: 3, estWorkSec: 30, restSec: 60, restKind: 'isolation', videoUrl: 42 },
+      ] }],
+    };
+    expect(validateProgram(bad)).toMatch(/videoUrl/i);
   });
 
   it('rejects a duplicate day key', () => {

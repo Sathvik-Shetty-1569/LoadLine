@@ -1,5 +1,6 @@
 import type { Step } from '../data/types';
 import { ExerciseImage } from './ExerciseImage';
+import { exerciseVideoUrl, hasOwnVideo } from '../lib/exerciseVideo';
 
 interface Props {
   step: Step;
@@ -24,6 +25,23 @@ export function RestView({ step, remainingSec, nextStep, onAdvance }: Props) {
             <span className="rest__next-name">{nextStep.label}</span>
             {nextStep.detail && <span className="rest__next-detail">{nextStep.detail}</span>}
             {nextStep.prescription && <span className="rest__next-prescription">{nextStep.prescription}</span>}
+            {nextStep.tags && nextStep.tags.length > 0 && (
+              <span className="step__tags step__tags--rest">
+                {nextStep.tags.map((t) => (
+                  <span className="step__tag" key={t}>{t}</span>
+                ))}
+              </span>
+            )}
+            {nextStep.kind !== 'rest' && (
+              <a
+                className="step__video step__video--rest"
+                href={exerciseVideoUrl(nextStep.label, nextStep.videoUrl)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {hasOwnVideo(nextStep.videoUrl) ? 'Watch demo video ▸' : 'How to perform ▸'}
+              </a>
+            )}
           </div>
         </div>
       )}

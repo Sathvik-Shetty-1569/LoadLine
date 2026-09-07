@@ -46,7 +46,10 @@ export function History({ history, onBack }: Props) {
           <div className="history__session-row" key={i}>
             <span>{new Date(h.finishedAt).toLocaleDateString()}</span>
             <span>{h.sessionName}</span>
-            <span>{Math.round(h.actualSec / 60)} min</span>
+            <span>
+              {Math.round(h.actualSec / 60)} min
+              {h.skips && h.skips.length > 0 && ` · ${h.skips.length} skipped`}
+            </span>
           </div>
         ))}
       </div>
