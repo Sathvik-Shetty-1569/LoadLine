@@ -1,5 +1,6 @@
 import type { Program } from './types';
 import { program as hypertrophy7kgV7 } from './program';
+import { pplProgram } from './pplProgram';
 
 export interface ProgramTemplate {
   id: string;
@@ -16,5 +17,11 @@ export const templates: ProgramTemplate[] = [
     name: hypertrophy7kgV7.title,
     description: 'Upper/Lower x2 per week built around 2 running days. Dumbbells + doorway bar, 4 lifting days.',
     build: () => structuredClone(hypertrophy7kgV7),
+  },
+  {
+    id: 'ppl-machines-v1',
+    name: pplProgram.title,
+    description: 'Push/Pull/Legs x2 per week, gym-machine + cable based. 6 lifting days, one with an easy run tacked on.',
+    build: () => structuredClone(pplProgram),
   },
 ];
