@@ -1,7 +1,83 @@
 import type { Archetype } from '../types';
-import { STANDING, SUPINE, QUADRUPED, KNEELING, pose } from '../types';
+import { STANDING, SUPINE, SEATED, QUADRUPED, KNEELING, pose } from '../types';
 
 export const lowerArchetypes: Archetype[] = [
+  {
+    id: 'hack-squat', label: 'Hack squat machine',
+    poses: [
+      pose(STANDING, { elbowL: [42, 34], elbowR: [49, 34], handL: [40, 44], handR: [47, 44] }),
+      pose(STANDING, {
+        head: [51, 20], neck: [51, 29], shoulderL: [48, 32], shoulderR: [55, 34],
+        elbowL: [44, 42], elbowR: [51, 44], handL: [42, 52], handR: [49, 54],
+        hip: [52, 66], kneeL: [42, 78], kneeR: [60, 78], footL: [40, 94], footR: [62, 94],
+      }),
+    ],
+    cycleSec: 1.1,
+  },
+  {
+    id: 'leg-press', label: 'Leg press', prop: 'chair',
+    poses: [
+      pose(SEATED, {
+        head: [36, 34], neck: [38, 42], shoulderL: [36, 45], shoulderR: [40, 49],
+        elbowL: [34, 54], elbowR: [36, 58], handL: [38, 60], handR: [40, 64],
+        hip: [42, 64], kneeL: [58, 54], kneeR: [60, 58], footL: [70, 50], footR: [72, 54],
+      }),
+      pose(SEATED, {
+        head: [36, 34], neck: [38, 42], shoulderL: [36, 45], shoulderR: [40, 49],
+        elbowL: [34, 54], elbowR: [36, 58], handL: [38, 60], handR: [40, 64],
+        hip: [42, 64], kneeL: [62, 58], kneeR: [64, 62], footL: [86, 50], footR: [88, 54],
+      }),
+    ],
+    cycleSec: 1.1,
+  },
+  {
+    id: 'leg-press-calf-raise', label: 'Calf raise on leg press', prop: 'chair',
+    poses: [
+      pose(SEATED, {
+        head: [36, 34], neck: [38, 42], shoulderL: [36, 45], shoulderR: [40, 49],
+        elbowL: [34, 54], elbowR: [36, 58], handL: [38, 60], handR: [40, 64],
+        hip: [42, 64], kneeL: [62, 58], kneeR: [64, 62], footL: [86, 54], footR: [88, 58],
+      }),
+      pose(SEATED, {
+        head: [36, 34], neck: [38, 42], shoulderL: [36, 45], shoulderR: [40, 49],
+        elbowL: [34, 54], elbowR: [36, 58], handL: [38, 60], handR: [40, 64],
+        hip: [42, 64], kneeL: [62, 58], kneeR: [64, 62], footL: [88, 46], footR: [90, 50],
+      }),
+    ],
+    cycleSec: 0.9,
+  },
+  {
+    id: 'leg-extension', label: 'Leg extension machine', prop: 'chair',
+    poses: [
+      SEATED,
+      pose(SEATED, { kneeR: [70, 58], footR: [92, 58] }),
+    ],
+    cycleSec: 1.0,
+  },
+  {
+    id: 'back-extension', label: 'Back extension (hyperextension bench)',
+    poses: [
+      {
+        head: [30, 70], neck: [36, 68], shoulderL: [40, 66], shoulderR: [40, 70],
+        elbowL: [32, 72], elbowR: [32, 76], handL: [28, 74], handR: [28, 78],
+        hip: [55, 60], kneeL: [70, 64], kneeR: [70, 68], footL: [86, 60], footR: [86, 64],
+      },
+      {
+        head: [24, 48], neck: [32, 52], shoulderL: [38, 54], shoulderR: [38, 58],
+        elbowL: [26, 46], elbowR: [26, 50], handL: [22, 50], handR: [22, 54],
+        hip: [55, 60], kneeL: [70, 64], kneeR: [70, 68], footL: [86, 60], footR: [86, 64],
+      },
+    ],
+    cycleSec: 1.3,
+  },
+  {
+    id: 'abductor-machine', label: 'Abductor machine',
+    poses: [
+      SEATED,
+      pose(SEATED, { kneeL: [60, 52], kneeR: [66, 82], footL: [62, 46], footR: [70, 94] }),
+    ],
+    cycleSec: 1.0,
+  },
   {
     id: 'squat', label: 'Squat', equipment: 'dumbbell',
     poses: [
@@ -16,6 +92,18 @@ export const lowerArchetypes: Archetype[] = [
   },
   {
     id: 'hinge', label: 'Hip hinge (RDL / deadlift)', equipment: 'dumbbells',
+    poses: [
+      STANDING,
+      pose(STANDING, {
+        head: [58, 38], neck: [55, 42], shoulderL: [52, 44], shoulderR: [58, 44],
+        elbowL: [51, 56], elbowR: [57, 56], handL: [50, 68], handR: [56, 68],
+        hip: [46, 52], kneeL: [45, 74], kneeR: [51, 74], footL: [46, 94], footR: [54, 94],
+      }),
+    ],
+    cycleSec: 1.2,
+  },
+  {
+    id: 'hinge-machine', label: 'Hip hinge machine (smith machine RDL)',
     poses: [
       STANDING,
       pose(STANDING, {

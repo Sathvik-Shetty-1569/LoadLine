@@ -11,6 +11,14 @@ export const warmupArchetypes: Archetype[] = [
     cycleSec: 1.0,
   },
   {
+    id: 'arm-swing', label: 'Arm swings',
+    poses: [
+      pose(STANDING, { elbowL: [42, 30], elbowR: [49, 46], handL: [40, 18], handR: [50, 62] }),
+      pose(STANDING, { elbowL: [42, 46], elbowR: [49, 30], handL: [40, 62], handR: [50, 18] }),
+    ],
+    cycleSec: 1.0,
+  },
+  {
     id: 'leg-swing', label: 'Walking leg swings',
     poses: [
       pose(STANDING, { kneeR: [58, 72], footR: [64, 88] }),

@@ -1,7 +1,47 @@
 import type { Archetype } from '../types';
-import { STANDING, HANGING, pose } from '../types';
+import { STANDING, SEATED, HANGING, pose } from '../types';
 
 export const pullArchetypes: Archetype[] = [
+  {
+    id: 'lat-pulldown', label: 'Lat pulldown machine', prop: 'bar',
+    poses: [
+      pose(SEATED, { elbowL: [42, 20], elbowR: [48, 20], handL: [44, 10], handR: [50, 10] }),
+      pose(SEATED, { elbowL: [36, 48], elbowR: [42, 50], handL: [40, 52], handR: [46, 54] }),
+    ],
+    cycleSec: 1.1,
+  },
+  {
+    id: 'seated-row', label: 'Seated row machine', prop: 'chair',
+    poses: [
+      pose(SEATED, { elbowL: [54, 50], elbowR: [58, 54], handL: [64, 52], handR: [68, 56] }),
+      pose(SEATED, { elbowL: [34, 46], elbowR: [36, 50], handL: [30, 50], handR: [32, 54] }),
+    ],
+    cycleSec: 1.1,
+  },
+  {
+    id: 'face-pull', label: 'Cable face pull',
+    poses: [
+      pose(STANDING, { elbowL: [50, 30], elbowR: [55, 28], handL: [62, 32], handR: [66, 28] }),
+      pose(STANDING, { elbowL: [34, 22], elbowR: [64, 20], handL: [40, 18], handR: [58, 16] }),
+    ],
+    cycleSec: 1.0,
+  },
+  {
+    id: 'preacher-curl', label: 'Preacher curl machine', prop: 'chair',
+    poses: [
+      pose(SEATED, { elbowR: [52, 58], handR: [58, 74] }),
+      pose(SEATED, { elbowR: [52, 58], handR: [46, 50] }),
+    ],
+    cycleSec: 1.0,
+  },
+  {
+    id: 'forearm-curl-machine', label: 'Forearm curl machine', prop: 'chair',
+    poses: [
+      pose(SEATED, { elbowR: [56, 68], handR: [66, 76] }),
+      pose(SEATED, { elbowR: [56, 68], handR: [66, 68] }),
+    ],
+    cycleSec: 0.9,
+  },
   {
     id: 'row', label: 'Single-arm row', equipment: 'dumbbell', prop: 'chair',
     poses: [
@@ -50,6 +90,14 @@ export const pullArchetypes: Archetype[] = [
     id: 'scapular-pull', label: 'Scapular pull / shrug on the bar', prop: 'bar',
     poses: [HANGING, pose(HANGING, { shoulderL: [46, 37], shoulderR: [54, 37], neck: [50, 34] })],
     cycleSec: 1.3,
+  },
+  {
+    id: 'band-pull-apart', label: 'Band pull-apart',
+    poses: [
+      pose(STANDING, { elbowL: [49, 32], elbowR: [54, 32], handL: [50, 34], handR: [53, 34] }),
+      pose(STANDING, { elbowL: [38, 29], elbowR: [65, 29], handL: [30, 30], handR: [73, 30] }),
+    ],
+    cycleSec: 1.0,
   },
   {
     id: 'reverse-fly', label: 'Bent-over reverse fly', equipment: 'dumbbells',
